@@ -1,16 +1,44 @@
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
+import { provideRouter, Routes, withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
 import Aura from '@primeuix/themes/aura';
 import { providePrimeNG } from 'primeng/config';
-import { appRoutes } from './app.routes';
+import { provideAuth, AuthInterceptor, AuthGuard } from 'xl-auth';
+import { XL_AUTH_GUARD_TOKEN } from 'xl-util';
+import {appRoutes} from 'xl-layout';
+
+const finalRoutes: Routes = [
+    ...appRoutes,
+    {
+        path: '',
+        loadChildren: () => import('./app/pages/auth/auth.routes')
+    },
+    {
+        path: 'notfound',
+        loadComponent: () => import('./app/pages/notfound/notfound').then(value => value.Notfound)
+    }
+];
 
 export const appConfig: ApplicationConfig = {
     providers: [
-        provideRouter(appRoutes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), withEnabledBlockingInitialNavigation()),
-        provideHttpClient(withFetch()),
+        provideAuth({
+            apiUrl: 'http://192.168.31.232:8080'
+        }),
+        provideHttpClient(
+            withFetch(),
+            withInterceptors([AuthInterceptor])
+        ),
+        provideRouter(finalRoutes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), withEnabledBlockingInitialNavigation()),
+        // provideHttpClient(withFetch()),
+        // provideHttpClient(
+        //     withInterceptors(a]),
+        //     withFetch()),
         provideAnimationsAsync(),
-        providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } })
+        providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } }),
+        {
+            provide: XL_AUTH_GUARD_TOKEN,
+            useClass: AuthGuard
+        }
     ]
 };

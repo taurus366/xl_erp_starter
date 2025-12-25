@@ -1,0 +1,40 @@
+{
+    "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "targetDefaults": {
+        "build": {
+            "cache": true,
+            "dependsOn": ["^build"],
+            "inputs": ["production", "^production"]
+        },
+        "test": {
+            "cache": true,
+            "inputs": ["default", "^production"]
+        },
+        "@nx/angular:package": {
+            "cache": true,
+            "dependsOn": ["^build"],
+            "inputs": ["production", "^production"]
+        }
+    },
+    "defaultBase": "master",
+    "namedInputs": {
+        "sharedGlobals": [],
+        "default": ["{projectRoot}/**/*", "sharedGlobals"],
+        "production": ["default", "!{projectRoot}/tsconfig.spec.json", "!{projectRoot}/**/*.spec.[jt]s", "!{projectRoot}/.eslintrc.json", "!{projectRoot}/eslint.config.cjs"]
+    },
+    "nxCloudId": "693ea078d53e74067190d357",
+    "generators": {
+        "@nx/angular:library": {
+            "linter": "eslint",
+            "unitTestRunner": "none"
+        },
+        "@nx/angular:component": {
+            "style": "css"
+        }
+    },
+    "release": {
+        "version": {
+            "preVersionCommand": "npx nx run-many -t build"
+        }
+    }
+}
