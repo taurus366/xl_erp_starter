@@ -44,8 +44,8 @@ export const appConfig: ApplicationConfig = {
             provide: XL_TOPBAR_CONFIG,
             useValue: {
                 name: 'AIOLDS',
-                logoUrl: 'assets/img/aiolds.png',
-                logoStyle: {'width': '100%'}
+                logoUrl: 'assets/img/diagram.png',
+                logoStyle: {'width': '60px'}
             }
         }
     ]
