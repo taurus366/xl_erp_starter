@@ -5,7 +5,7 @@ import { provideRouter, Routes, withEnabledBlockingInitialNavigation, withInMemo
 import Aura from '@primeuix/themes/aura';
 import { providePrimeNG } from 'primeng/config';
 import { provideAuth, AuthInterceptor, AuthGuard } from 'xl-auth';
-import { XL_AUTH_GUARD_TOKEN } from 'xl-util';
+import { XL_AUTH_GUARD_TOKEN, XL_TOPBAR_CONFIG } from 'xl-util';
 import {appRoutes} from 'xl-layout';
 
 const finalRoutes: Routes = [
@@ -39,6 +39,14 @@ export const appConfig: ApplicationConfig = {
         {
             provide: XL_AUTH_GUARD_TOKEN,
             useClass: AuthGuard
+        },
+        {
+            provide: XL_TOPBAR_CONFIG,
+            useValue: {
+                name: 'AIOLDS',
+                logoUrl: 'assets/img/aiolds.png',
+                logoStyle: {'width': '100%'}
+            }
         }
     ]
 };
