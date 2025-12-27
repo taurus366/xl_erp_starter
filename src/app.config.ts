@@ -8,6 +8,9 @@ import { provideAuth, AuthInterceptor, AuthGuard } from 'xl-auth';
 import { XL_AUTH_GUARD_TOKEN, XL_TOPBAR_CONFIG } from 'xl-util';
 import {appRoutes} from 'xl-layout';
 
+import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from "@ngx-translate/http-loader";
+
 const finalRoutes: Routes = [
     ...appRoutes,
     {
@@ -47,6 +50,14 @@ export const appConfig: ApplicationConfig = {
                 logoUrl: 'assets/img/diagram.png',
                 logoStyle: {'width': '60px'}
             }
-        }
+        },
+        provideTranslateService({
+            loader: provideTranslateHttpLoader({
+                prefix: 'assets/i18n/',
+                suffix: '.json'
+            }),
+            fallbackLang: 'en',
+            lang: 'bg'
+        })
     ]
 };
