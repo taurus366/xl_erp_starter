@@ -1,66 +1,90 @@
+const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const CACHE_DIR = path.join(process.cwd(), 'aiolds.cache');
+// Глобален кеш в HOME директорията
+const CACHE_DIR = path.join(os.homedir(), '.aiolds-cache');
 const LIBS_DIR = path.join(process.cwd(), 'libs');
 const TSCONFIG_PATH = path.join(process.cwd(), 'tsconfig.base.json');
 
+// Създаване на базовите директории
 if (!fs.existsSync(CACHE_DIR)) fs.mkdirSync(CACHE_DIR, { recursive: true });
 if (!fs.existsSync(LIBS_DIR)) fs.mkdirSync(LIBS_DIR, { recursive: true });
 
+function getModulesFromConfig() {
+    const rawContent = fs.readFileSync(TSCONFIG_PATH, 'utf8');
+    const lines = rawContent.split('\n');
+    const cleanJson = JSON.parse(rawContent.replace(/\/\/.*|\/\*[\s\S]*?\*\//g, ""));
+    const paths = cleanJson.compilerOptions.paths || {};
+
+    return Object.keys(paths)
+        .filter(name => name.startsWith('xl-'))
+        .map(name => {
+            const line = lines.find(l => l.includes(`"${name}"`));
+            let repoUrl = null;
+            if (line && line.includes('//')) {
+                const comment = line.split('//')[1].trim();
+                if (comment.startsWith('git@') || comment.startsWith('http')) {
+                    repoUrl = comment;
+                }
+            }
+            return { name, repoUrl };
+        });
+}
+
 function sync() {
-    // Четем файла и махаме коментарите, за да не гърми JSON.parse
-    let content = fs.readFileSync(TSCONFIG_PATH, 'utf8');
-    content = content.replace(/\/\/.*|\/\*[\s\S]*?\*\//g, "");
+    const modules = getModulesFromConfig();
 
-    const tsconfig = JSON.parse(content);
-    const paths = tsconfig.compilerOptions.paths || {};
+    modules.forEach(({ name, repoUrl }) => {
+        const publicPath = path.join(LIBS_DIR, name);
+        const cachePath = path.join(CACHE_DIR, name);
 
-    Object.keys(paths).forEach(libName => {
-        if (libName.startsWith('xl-')) {
-            const cachePath = path.join(CACHE_DIR, libName);
-            const publicPath = path.join(LIBS_DIR, libName);
+        // Ако папката е локална (истинска папка в libs), не я пипаме
+        if (fs.existsSync(publicPath) && !fs.lstatSync(publicPath).isSymbolicLink()) {
+            console.log(`🏠 ${name} е локален сорс. Пропускане.`);
+            return;
+        }
 
-            // 1. Клониране ако липсва в кеша
-            if (!fs.existsSync(cachePath)) {
-                console.log(`🚀 Cloning ${libName}...`);
-                // Тук генерираме линка автоматично
-                const repoUrl = `git@github.com:taurus366/${libName}.git`;
-                try {
-                    execSync(`git clone ${repoUrl} ${cachePath}`, { stdio: 'inherit' });
-                } catch (e) {
-                    console.error(`❌ Failed to clone ${libName}`);
-                    return;
-                }
+        // Ако имаме URL и нямаме кеш -> теглим
+        if (repoUrl && !fs.existsSync(cachePath)) {
+            console.log(`🚀 Теглене на ${name} от ${repoUrl}...`);
+            try {
+                execSync(`git clone --depth 1 ${repoUrl} ${cachePath}`, { stdio: 'inherit' });
+                // Трием .git за сигурност и "read-only" усещане
+                execSync(`rm -rf ${path.join(cachePath, '.git')}`);
+            } catch (e) {
+                console.error(`❌ Грешка при теглене на ${name}`);
             }
+        }
 
-            // 2. Symlink към libs/
-            if (!fs.existsSync(publicPath)) {
-                console.log(`🔗 Linking ${libName} -> libs/`);
-                try {
-                    // На Windows 'junction', на Linux 'dir'
-                    const type = process.platform === "win32" ? "junction" : "dir";
-                    fs.symlinkSync(cachePath, publicPath, type);
-                } catch (e) {
-                    console.error(`❌ Link error for ${libName}: ${e.message}`);
-                }
-            }
+        // Създаваме симлинк, ако сорсът е в кеша, но не е в libs
+        if (fs.existsSync(cachePath) && !fs.existsSync(publicPath)) {
+            console.log(`🔗 Свързване ${name} -> libs/`);
+            const type = process.platform === "win32" ? "junction" : "dir";
+            fs.symlinkSync(cachePath, publicPath, type);
         }
     });
 }
 
 const mode = process.argv[2];
-if (mode === 'upgrade') {
-    console.log('🔄 Upgrading libraries...');
-    const dirs = fs.readdirSync(CACHE_DIR);
-    dirs.forEach(dir => {
-        const fullPath = path.join(CACHE_DIR, dir);
-        if (fs.statSync(fullPath).isDirectory()) {
-            console.log(`Updating ${dir}...`);
-            execSync(`git -C ${fullPath} pull`, { stdio: 'inherit' });
+
+if (mode === 'update') {
+    console.log('🧹 Почистване на кешираните модули преди обновяване...');
+    const modules = getModulesFromConfig();
+
+    modules.forEach(({ name, repoUrl }) => {
+        if (repoUrl) {
+            const cachePath = path.join(CACHE_DIR, name);
+            if (fs.existsSync(cachePath)) {
+                console.log(`🗑️ Изтриване на стара версия: ${name}`);
+                fs.rmSync(cachePath, { recursive: true, force: true });
+            }
         }
     });
+    // След изчистване, пускаме стандартен sync
+    sync();
+    console.log('✅ Всички модули са обновени успешно!');
 } else {
     sync();
 }
