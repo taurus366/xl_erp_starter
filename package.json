@@ -9,7 +9,8 @@
     "format": "prettier --write \"**/*.{js,mjs,ts,mts,d.ts,html}\" --cache",
     "test": "nx test",
     "intl": "node libs/xl-util/src/lib/scripts/extract-i18n.js en bg",
-    "sync": "node libs/xl-util/src/lib/scripts/sync-libs.js"
+    "sync": "node libs/xl-util/src/lib/scripts/sync-libs.js",
+    "update": "node libs/xl-util/src/lib/scripts/sync-libs.js update"
   },
   "private": true,
   "dependencies": {

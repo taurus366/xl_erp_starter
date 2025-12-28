@@ -1,59 +1,90 @@
-# Sakai19
+# 🚀 AIOLDS Project Automation
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.0.5.
+This project uses an automated system for library management and translation extraction via scripts located in `xl-util`.
 
-## Development server
+---
 
-To start a local development server, run:
+## 📦 1. Install/Update Repository
 
-```bash
-ng serve
-```
+The system synchronizes local libraries with a global cache and supports automatic Git downloading.
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- **Configuration:** In `tsconfig.base.json`, add the path and the Git link as a comment:
+  `"xl-layout": ["libs/xl-layout/src/index.ts"] // git@github.com:user/repo.git`
 
-## Code scaffolding
+- **Commands:**
+    - `$ command -> npm run sync`
+    - **Or directly:** `node libs/xl-util/src/lib/scripts/sync-libs.js`
+    - **To update:** `npm run update` (clears cache and redownloads)
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+---
 
-```bash
-ng generate component component-name
-```
+## 🌍 2. Extract All Translations
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+The script scans the project and automatically generates language files, appending new keys at the bottom and preserving existing translations.
 
-```bash
-ng generate --help
-```
+- **Output Files:**
+    - `$ files -> src/assets/i18n/*.json`
 
-## Building
+- **Commands:**
+    - `$ command -> npm run intl`
+    - **Or directly:** `node libs/xl-util/src/lib/scripts/extract-i18n.js en bg`
+    - *(Note: `en` and `bg` are language parameters for the files you wish to generate)*
 
-To build the project run:
+---
 
-```bash
-ng build
-```
+## 🛠️ Integration in package.json
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+To enable these commands, add the following scripts to your main `package.json`:
 
-## Running unit tests
+```json
+"scripts": {
+  "sync": "node ./libs/xl-util/src/lib/scripts/sync-libs.js",
+  "update": "node ./libs/xl-util/src/lib/scripts/sync-libs.js update",
+  "intl": "node ./libs/xl-util/src/lib/scripts/extract-i18n.js en bg"
+}
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+-------------------------------
+# 🚀 AIOLDS Project Automation
 
-```bash
-ng test
-```
+Този проект използва автоматизирана система за управление на библиотеки и извличане на преводи чрез скриптове в `xl-util`.
 
-## Running end-to-end tests
+---
 
-For end-to-end (e2e) testing, run:
+## 📦 1. Install/Update Repository
 
-```bash
-ng e2e
-```
+Системата синхронизира локалните библиотеки с глобалния кеш и поддържа автоматично изтегляне от Git.
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+- **Конфигурация:** В `tsconfig.base.json` добавете пътя и Git линка като коментар:
+  `"xl-layout": ["libs/xl-layout/src/index.ts"] // git@github.com:user/repo.git`
 
-## Additional Resources
+- **Команди:**
+    - `$ command -> npm run sync`
+    - **Или директно:** `node libs/xl-util/src/lib/scripts/sync-libs.js`
+    - **За ъпдейт:** `npm run update` (изтрива кеша и тегли наново)
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+---
+
+## 🌍 2. Extract All Translations
+
+Скриптът сканира проекта и автоматично генерира езикови файлове, като добавя новите ключове най-отдолу и запазва старите преводи.
+
+- **Изходни файлове:**
+    - `$ files -> src/assets/i18n/*.json`
+
+- **Команди:**
+    - `$ command -> npm run intl`
+    - **Или директно:** `node libs/xl-util/src/lib/scripts/extract-i18n.js en bg`
+    - *(Забележка: `en` и `bg` са параметри за езиците, които искате да генерирате)*
+
+---
+
+## 🛠️ Интеграция в package.json
+
+За да работят командите, добавете следните скриптове в основния `package.json`:
+
+```json
+"scripts": {
+  "sync": "node ./libs/xl-util/src/lib/scripts/sync-libs.js",
+  "update": "node ./libs/xl-util/src/lib/scripts/sync-libs.js update",
+  "intl": "node ./libs/xl-util/src/lib/scripts/extract-i18n.js en bg"
+}
