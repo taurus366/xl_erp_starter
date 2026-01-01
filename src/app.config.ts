@@ -10,6 +10,7 @@ import {appRoutes} from 'xl-layout';
 
 import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from "@ngx-translate/http-loader";
+import { DialogService } from 'primeng/dynamicdialog';
 
 const finalRoutes: Routes = [
     ...appRoutes,
@@ -25,6 +26,7 @@ const finalRoutes: Routes = [
 
 export const appConfig: ApplicationConfig = {
     providers: [
+        DialogService,
         provideAuth({
             apiUrl: 'http://192.168.31.232:8080'
         }),
